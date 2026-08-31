@@ -1,0 +1,16 @@
+# Base de datos local (datos de prueba, no debe subirse al repositorio)
+tasks.db
+
+# Archivos temporales que genera Python al ejecutarse
+__pycache__/
+*.pyc
+
+# Entorno virtual, si en algún momento creas uno
+venv/
+.venv/
+env/
+
+# Archivos del editor / sistema operativo
+.vscode/
+.idea/
+.DS_Store
