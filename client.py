@@ -6,49 +6,64 @@ Es justo lo que haría un frontend, un script de automatización, u otro
 sistema que quiera integrarse con tu API — la diferencia es que aquí lo
 hacemos con unas pocas líneas de Python en vez de una interfaz visual.
 
+Ahora la API pide una API key para crear/editar/borrar cosas (lee sobre
+esto en dependencies.py). Este script manda esa key en un header HTTP
+llamado X-API-Key, tal como lo haría un sistema real integrándose.
+
 Requisito: tu API (app.main:app) debe estar corriendo en otra terminal,
 normalmente en http://127.0.0.1:8000
 """
 
-import requests
+import os
 
-# La "base" de todas las URLs a las que le vamos a hablar.
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
 BASE_URL = "http://127.0.0.1:8000"
+
+# Los headers que se mandan en CADA petición que necesite autenticarse.
+# Se arman una sola vez aquí, y se reusan en cada función de abajo.
+HEADERS = {"X-API-Key": os.getenv("API_KEY", "")}
 
 
 def crear_usuario(nombre: str, email: str) -> dict:
-    """Le pide a la API que cree un usuario nuevo."""
+    """Le pide a la API que cree un usuario nuevo. Requiere API key."""
     respuesta = requests.post(
         f"{BASE_URL}/users/",
-        json={"name": nombre, "email": email},  # requests convierte esto a JSON solo
+        json={"name": nombre, "email": email},
+        headers=HEADERS,
     )
-    respuesta.raise_for_status()  # si el status es 4xx/5xx, lanza un error aquí mismo
-    return respuesta.json()  # convierte la respuesta JSON de vuelta a un dict de Python
+    respuesta.raise_for_status()
+    return respuesta.json()
 
 
 def crear_tarea(owner_id: int, titulo: str, descripcion: str = "") -> dict:
-    """Le pide a la API que cree una tarea para un usuario existente."""
+    """Le pide a la API que cree una tarea para un usuario existente. Requiere API key."""
     respuesta = requests.post(
         f"{BASE_URL}/tasks/",
-        params={"owner_id": owner_id},  # esto va en la URL: ?owner_id=1
-        json={"title": titulo, "description": descripcion},  # esto va en el body
+        params={"owner_id": owner_id},
+        json={"title": titulo, "description": descripcion},
+        headers=HEADERS,
     )
     respuesta.raise_for_status()
     return respuesta.json()
 
 
 def listar_tareas() -> list[dict]:
-    """Le pide a la API la lista completa de tareas."""
+    """Le pide a la API la lista completa de tareas. NO requiere API key (es de lectura)."""
     respuesta = requests.get(f"{BASE_URL}/tasks/")
     respuesta.raise_for_status()
     return respuesta.json()
 
 
 def completar_tarea(task_id: int) -> dict:
-    """Le pide a la API que marque una tarea como completada."""
+    """Le pide a la API que marque una tarea como completada. Requiere API key."""
     respuesta = requests.patch(
         f"{BASE_URL}/tasks/{task_id}",
         json={"completed": True},
+        headers=HEADERS,
     )
     respuesta.raise_for_status()
     return respuesta.json()

@@ -6,14 +6,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from .. import crud, schemas
-from ..dependencies import get_db
+from ..dependencies import get_db, verify_api_key
 
 # APIRouter es como un "mini FastAPI" para agrupar rutas relacionadas.
 # prefix="/users" significa que todas las rutas de aquí empiezan con /users.
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.post("/", response_model=schemas.UserOut, status_code=201)
+@router.post("/", response_model=schemas.UserOut, status_code=201, dependencies=[Depends(verify_api_key)])
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     existing = crud.get_user_by_email(db, email=user.email)
     if existing:

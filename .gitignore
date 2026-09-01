@@ -1,6 +1,9 @@
 # Base de datos local (datos de prueba, no debe subirse al repositorio)
 tasks.db
 
+# Secretos: la API key real vive solo en tu máquina, nunca en GitHub
+.env
+
 # Archivos temporales que genera Python al ejecutarse
 __pycache__/
 *.pyc

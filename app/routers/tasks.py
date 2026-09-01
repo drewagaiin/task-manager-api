@@ -7,12 +7,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from .. import crud, schemas
-from ..dependencies import get_db
+from ..dependencies import get_db, verify_api_key
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
-@router.post("/", response_model=schemas.TaskOut, status_code=201)
+@router.post("/", response_model=schemas.TaskOut, status_code=201, dependencies=[Depends(verify_api_key)])
 def create_task(task: schemas.TaskCreate, owner_id: int, db: Session = Depends(get_db)):
     owner = crud.get_user(db, owner_id)
     if owner is None:
@@ -33,7 +33,7 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
     return db_task
 
 
-@router.patch("/{task_id}", response_model=schemas.TaskOut)
+@router.patch("/{task_id}", response_model=schemas.TaskOut, dependencies=[Depends(verify_api_key)])
 def update_task(task_id: int, task_update: schemas.TaskUpdate, db: Session = Depends(get_db)):
     db_task = crud.update_task(db, task_id, task_update)
     if db_task is None:
@@ -41,7 +41,7 @@ def update_task(task_id: int, task_update: schemas.TaskUpdate, db: Session = Dep
     return db_task
 
 
-@router.delete("/{task_id}", status_code=204)
+@router.delete("/{task_id}", status_code=204, dependencies=[Depends(verify_api_key)])
 def delete_task(task_id: int, db: Session = Depends(get_db)):
     deleted = crud.delete_task(db, task_id)
     if not deleted:
